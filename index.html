@@ -3,411 +3,256 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>拼音教学站 — Pinyin Tutor</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>拼音表 · 发音 (Pinyin Table & Pronunciation)</title>
+  <style>
+:root{
+  --bg:#fafbfd; --card:#fff; --accent:#1e88e5; --muted:#6b7280;
+  font-family: "Noto Sans SC", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:18px;background:var(--bg);color:#0f172a}
+header h1{margin:0;font-size:1.4rem}
+.muted{color:var(--muted);font-size:0.95rem;margin-top:6px}
+main{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:12px}
+.card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+.grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{padding:8px 10px;border-radius:8px;border:1px solid #e6eef8;background:linear-gradient(180deg,#fff,#f3f9ff);cursor:pointer;min-width:56px;text-align:center}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls label{display:flex;gap:6px;align-items:center}
+.controls select{padding:6px;border-radius:6px;border:1px solid #e6eef8}
+button{background:var(--accent);color:#fff;border:none;padding:8px 10px;border-radius:6px;cursor:pointer}
+.big{font-weight:700;font-size:1.2rem;margin-left:6px}
+footer{margin-top:12px;text-align:center;color:var(--muted);font-size:0.9rem}
+  </style>
 </head>
 <body>
   <header>
-    <h1>拼音教学站 <small>（Pinyin Tutor）</small></h1>
-    <p class="subtitle">学习拼音、练习声调、听力与拼写</p>
+    <h1>拼音表 · 发音 (Pinyin Table & Pronunciation)</h1>
+    <p class="muted">点击任意项播放发音，或在组合器中选择声母/韵母/声调生成拼音并播放。</p>
   </header>
 
   <main>
-    <section id="learning" class="card">
-      <h2>学习拼音</h2>
-      <div id="lesson-controls">
-        <label>筛选：
-          <select id="filter-select">
-            <option value="all">全部</option>
-            <option value="initials">声母 (initials)</option>
-            <option value="finals">韵母 (finals)</option>
-            <option value="special">整体认读</option>
+    <section class="card">
+      <h2>声母（Initials / 声母）</h2>
+      <div id="initials" class="grid"></div>
+    </section>
+
+    <section class="card">
+      <h2>韵母（Finals / 韵母）</h2>
+      <div id="finals" class="grid"></div>
+    </section>
+
+    <section class="card">
+      <h2>拼音组合器（Generate & Play）</h2>
+      <div class="controls">
+        <label>声母：
+          <select id="sel-initial"></select>
+        </label>
+        <label>韵母：
+          <select id="sel-final"></select>
+        </label>
+        <label>声调：
+          <select id="sel-tone">
+            <option value="1">1（阴平）</option>
+            <option value="2">2（阳平）</option>
+            <option value="3">3（上声）</option>
+            <option value="4">4（去声）</option>
+            <option value="0">0（轻声 / neutral）</option>
           </select>
         </label>
-        <input id="search" placeholder="搜索拼音或示例词 (如：ma)" />
+        <button id="gen-play">生成并播放</button>
       </div>
-
-      <div id="syllable-list" class="grid"></div>
-
-      <div id="detail" class="detail">
-        <h3 id="detail-syllable">选择一个拼音</h3>
-        <div class="controls">
-          <button id="play-btn">🔊 播放发音</button>
-          <button id="show-examples-btn">示例词</button>
-        </div>
-        <p id="detail-description"></p>
-        <ul id="examples"></ul>
-      </div>
+      <p>结果：<span id="result" class="big"></span></p>
+      <p class="muted">说明：音标上的声调使用标准拼音音调符号（ā á ǎ à），发音由浏览器 SpeechSynthesis 生成。</p>
     </section>
 
-    <section id="practice" class="card">
-      <h2>即时练习</h2>
-      <div id="practice-area">
-        <div id="practice-target" class="big-text"></div>
-        <div class="row">
-          <input id="answer" placeholder="输入拼音并标声调，例如：mā / ma1" />
-          <button id="check-btn">检查</button>
-          <button id="next-btn">下一个</button>
-        </div>
-        <p id="feedback" class="feedback"></p>
-      </div>
-    </section>
-
-    <section id="quiz" class="card">
-      <h2>小测验（随机）</h2>
-      <div id="quiz-area">
-        <button id="start-quiz">开始测验（5题）</button>
-        <div id="quiz-question" class="hidden">
-          <p id="quiz-prompt"></p>
-          <div id="quiz-options" class="grid options"></div>
-          <p id="quiz-status"></p>
-        </div>
-      </div>
+    <section class="card">
+      <h2>示例常用音节（Common syllables）</h2>
+      <div id="presets" class="grid"></div>
     </section>
   </main>
 
   <footer>
-    <p>示例项目 · 可定制 · 如果你需要后端或更复杂功能，请告诉我</p>
+    <p class="muted">示例项目 · 如需将发音替换为真实录音（更准确），我可以帮你生成或接入音频资源。</p>
   </footer>
 
-  <script src="script.js"></script>
-</body>
-</html>
-:root{
-  --bg:#f7f9fc;
-  --card:#ffffff;
-  --accent:#2b7de9;
-  --muted:#6b7280;
-  --success:#16a34a;
-  --danger:#dc2626;
-  font-family: Inter, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
-}
+  <script>
+/* ====== script.js 内容（已内联） ====== */
+// 拼音声母与韵母（基础集合，常见教学用）
+const INITIALS = ["", "b","p","m","f","d","t","n","l","g","k","h","j","q","x","zh","ch","sh","r","z","c","s","y","w"];
+const FINALS = [
+  "a","o","e","ai","ei","ao","ou","an","en","ang","eng","ong",
+  "i","ia","iao","ie","iu","ian","in","iang","ing","iong",
+  "u","ua","uo","uai","ui","uan","un","uang",
+  "ü","üe","üan","ün"
+];
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  background:var(--bg);
-  color:#0f172a;
-  line-height:1.4;
-  display:flex;
-  flex-direction:column;
-  min-height:100vh;
-  padding:20px;
-}
-
-header{margin-bottom:18px}
-header h1{margin:0;font-size:1.6rem}
-.subtitle{margin:4px 0 0;color:var(--muted)}
-
-main{
-  display:grid;
-  grid-template-columns: 1fr 360px;
-  gap:18px;
-  align-items:start;
-  flex:1;
-}
-
-.card{
-  background:var(--card);
-  border-radius:10px;
-  padding:16px;
-  box-shadow:0 6px 18px rgba(15,23,42,0.06);
-}
-
-#learning{grid-column:1}
-#practice,#quiz{grid-column:2}
-
-#lesson-controls{display:flex;gap:12px;align-items:center;margin-bottom:12px}
-#lesson-controls input, #lesson-controls select{padding:6px 8px;border-radius:6px;border:1px solid #e6eef8}
-
-.grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fill,minmax(120px,1fr));
-  gap:10px;
-}
-
-.syllable{
-  padding:10px;
-  border-radius:8px;
-  background:linear-gradient(180deg,#ffffff,#f3f9ff);
-  text-align:center;
-  cursor:pointer;
-  border:1px solid rgba(43,125,233,0.08);
-}
-
-.syllable .pinyin{font-weight:700;font-size:1.1rem}
-.syllable .tone{color:var(--muted);font-size:0.85rem}
-
-.detail{margin-top:14px;padding:12px;background:#fbfdff;border-radius:8px;border:1px solid #eef6ff}
-.controls{display:flex;gap:8px;margin:8px 0}
-.controls button{padding:6px 10px;border-radius:6px;border:1px solid #dbeafe;background:#ffffff;cursor:pointer}
-
-.big-text{font-size:2rem;font-weight:700;text-align:center;padding:10px}
-.row{display:flex;gap:8px;align-items:center;margin-top:8px}
-.row input{flex:1;padding:8px;border-radius:8px;border:1px solid #e6eef8}
-
-.feedback{min-height:1.2rem;margin-top:8px}
-
-.hidden{display:none}
-
-footer{text-align:center;margin-top:18px;color:var(--muted);font-size:0.9rem}
-
-/* Quiz options */
-.options{grid-template-columns:repeat(2,1fr)}
-.option{
-  padding:10px;border-radius:8px;border:1px solid #e6eef8;background:#fff;cursor:pointer;text-align:center;
-}
-.option.correct{background:linear-gradient(90deg,#ecfdf5,#bbf7d0);border-color:var(--success)}
-.option.wrong{background:linear-gradient(90deg,#fff1f2,#fecaca);border-color:var(--danger)}
-// 简易拼音教学数据（演示用，可扩展）
-const SYLLABLES = [
-  {pinyin: "ma1", display: "mā", type: "initials", desc: "常见音节：妈（mother）", examples: ["妈 mā — 妈妈", "骂 mà — 责备"]},
-  {pinyin: "ma2", display: "má", type: "initials", desc: "上升调", examples: ["麻 má — 大麻"]},
-  {pinyin: "ma3", display: "mǎ", type: "initials", desc: "上降上调", examples: ["马 mǎ — 动物"]},
-  {pinyin: "ma4", display: "mà", type: "initials", desc: "第四声（去声）", examples: ["骂 mà — 斥责"]},
-  {pinyin: "ba1", display: "bā", type: "initials", desc: "声母 b", examples: ["八 bā — 数字"]},
-  {pinyin: "bo1", display: "bō", type: "initials", desc: "整体认读与韵母示例", examples: ["波 bō — 波浪"]},
-  {pinyin: "ai1", display: "āi", type: "finals", desc: "韵母 ai 的第一声", examples: ["爱 ài — 爱情"]},
-  // 可在此处继续添加完整拼音表
+// 一些常用音节预设（方便用户快速试听）
+const PRESETS = [
+  "ma1","ma2","ma3","ma4",
+  "ba1","bo1",
+  "zhong1","guo2","ren2",
+  "ni3","hao3","xie4",
+  "ai4","ou1","ang1","eng1"
 ];
 
 // DOM
-const syllableList = document.getElementById('syllable-list');
-const detailSyllable = document.getElementById('detail-syllable');
-const detailDescription = document.getElementById('detail-description');
-const examplesEl = document.getElementById('examples');
-const playBtn = document.getElementById('play-btn');
-const showExamplesBtn = document.getElementById('show-examples-btn');
-const filterSelect = document.getElementById('filter-select');
-const searchInput = document.getElementById('search');
+const initialsEl = document.getElementById('initials');
+const finalsEl = document.getElementById('finals');
+const selInitial = document.getElementById('sel-initial');
+const selFinal = document.getElementById('sel-final');
+const selTone = document.getElementById('sel-tone');
+const genPlayBtn = document.getElementById('gen-play');
+const resultEl = document.getElementById('result');
+const presetsEl = document.getElementById('presets');
 
-const practiceTarget = document.getElementById('practice-target');
-const answerInput = document.getElementById('answer');
-const checkBtn = document.getElementById('check-btn');
-const nextBtn = document.getElementById('next-btn');
-const feedback = document.getElementById('feedback');
+// 帮助函数：将不带声调的拼音（如 "bao"）和声调数字 (1-4, 0=轻声) 转为带调字符（如 "bǎo"）
+const TONE_MARKS = {
+  a: ['ā','á','ǎ','à'],
+  o: ['ō','ó','ǒ','ò'],
+  e: ['ē','é','ě','è'],
+  i: ['ī','í','ǐ','ì'],
+  u: ['ū','ú','ǔ','ù'],
+  ü: ['ǖ','ǘ','ǚ','ǜ']
+};
 
-const startQuizBtn = document.getElementById('start-quiz');
-const quizQuestion = document.getElementById('quiz-question');
-const quizPrompt = document.getElementById('quiz-prompt');
-const quizOptions = document.getElementById('quiz-options');
-const quizStatus = document.getElementById('quiz-status');
-
-let current = null;
-let practicePool = [...SYLLABLES];
-
-// Helpers
-function renderList(list){
-  syllableList.innerHTML = '';
-  list.forEach(s => {
-    const el = document.createElement('div');
-    el.className = 'syllable';
-    el.dataset.pinyin = s.pinyin;
-    el.innerHTML = `<div class="pinyin">${s.display}</div><div class="tone">${s.pinyin}</div>`;
-    el.addEventListener('click', () => showDetail(s));
-    syllableList.appendChild(el);
-  });
+// 根据拼音拼写规则，确定要加音调符号的元音顺序：a > o > e > (i/u/ü按次序)
+function applyToneMark(syllable, tone){
+  if(tone === 0) return syllable; // 轻声保持不变
+  // 标准化：把 v 或 u: 视为 ü
+  let s = syllable.replace(/v/g, 'ü').replace(/u:/g, 'ü');
+  // 优先找到 a, o, e
+  const vowels = ['a','o','e','i','u','ü'];
+  let targetIndex = -1;
+  // special rule: "iu" and "ui" tone mark on second vowel
+  if(/iu/.test(s)) targetIndex = s.indexOf('u');
+  if(/ui/.test(s)) targetIndex = s.indexOf('i');
+  if(targetIndex === -1){
+    for(const v of ['a','o','e']){
+      const idx = s.indexOf(v);
+      if(idx !== -1){ targetIndex = idx; break; }
+    }
+  }
+  if(targetIndex === -1){
+    // find first i/u/ü
+    for(const v of ['i','u','ü']){
+      const idx = s.indexOf(v);
+      if(idx !== -1){ targetIndex = idx; break; }
+    }
+  }
+  if(targetIndex === -1) return s; // 没有元音？
+  const ch = s[targetIndex];
+  const marks = TONE_MARKS[ch];
+  if(!marks) return s;
+  const marked = marks[tone-1];
+  return s.slice(0,targetIndex) + marked + s.slice(targetIndex+1);
 }
 
-function showDetail(s){
-  current = s;
-  detailSyllable.textContent = `${s.display}  —  ${s.pinyin}`;
-  detailDescription.textContent = s.desc || '';
-  examplesEl.innerHTML = '';
-  (s.examples || []).forEach(it => {
-    const li = document.createElement('li');
-    li.textContent = it;
-    examplesEl.appendChild(li);
-  });
+// 构造并播放拼音（输入：无声调 pinyinBase 如 "bao"，tone 0-4）
+function playPinyin(pinyinBase, tone){
+  const textWithMark = applyToneMark(pinyinBase, tone);
+  resultEl.textContent = textWithMark;
+  speak(textWithMark);
 }
 
+// 简单的 TTS：使用浏览器 SpeechSynthesis 朗读传入的文本
 function speak(text){
-  if(!window.speechSynthesis) return alert('当前浏览器不支持 SpeechSynthesis');
+  if(!('speechSynthesis' in window)){
+    alert('当前浏览器不支持 SpeechSynthesis（语音合成）。');
+    return;
+  }
   const utter = new SpeechSynthesisUtterance(text);
-  // 尽量使用中文发音（设备支持情况下）
+  // 尽量使用中文发音以获得更接近的普通话音色（效果依赖浏览器实现）
   utter.lang = 'zh-CN';
-  // 直接朗读汉字或拼音（效果因浏览器而异）
+  // 一些浏览器不识别拼音；若设备支持，朗读汉字会更准确。
+  // 这里直接朗读拼音字符串，作为教学演示。如果你有汉字音频或文字示例，可替换为汉字播放。
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utter);
 }
 
-// 初始渲染
-renderList(SYLLABLES);
-showDetail(SYLLABLES[0]);
-
-// 过滤与搜索
-filterSelect.addEventListener('change', () => applyFilter());
-searchInput.addEventListener('input', () => applyFilter());
-
-function applyFilter(){
-  const f = filterSelect.value;
-  const q = searchInput.value.trim().toLowerCase();
-  const filtered = SYLLABLES.filter(s => {
-    if(f !== 'all' && s.type !== f) return false;
-    if(!q) return true;
-    return s.pinyin.includes(q) || s.display.includes(q) || (s.examples||[]).some(e => e.toLowerCase().includes(q));
-  });
-  renderList(filtered);
-}
-
-// 播放与示例
-playBtn.addEventListener('click', () => {
-  if(!current) return;
-  // 优先朗读汉字示例中的汉字（更自然）；如无则读拼音
-  const text = (current.examples && current.examples[0]) || current.pinyin;
-  speak(text);
-});
-
-showExamplesBtn.addEventListener('click', () => {
-  if(!current) return;
-  alert((current.examples || []).join('\n') || '无示例');
-});
-
-// Practice
-function pickRandom(){
-  return practicePool[Math.floor(Math.random()*practicePool.length)];
-}
-
-function normalizePinyinInput(input){
-  // 简单规范化：把带声调或数字转为标准 pinyin 数字形式，如：mā -> ma1, ma1 -> ma1
-  input = input.trim().toLowerCase();
-  // 处理以数字标调的情况
-  const numMatch = input.match(/([a-z]+)([1-5])$/);
-  if(numMatch) return `${numMatch[1]}${numMatch[2]}`;
-  // 简单处理带音调字符（只支持常见五个调），映射回数字（示范）
-  const toneMap = {
-    'ā':'a1','á':'a2','ǎ':'a3','à':'a4',
-    'ó':'o2','ō':'o1','ǒ':'o3','ò':'o4',
-    'ē':'e1','é':'e2','ě':'e3','è':'e4',
-    'í':'i2','ī':'i1','ǐ':'i3','ì':'i4',
-    'ú':'u2','ū':'u1','ǔ':'u3','ù':'u4',
-    'ǘ':'ü2','ǚ':'ü3','ǜ':'ü4','ǖ':'ü1'
-  };
-  // 替换带调字符
-  let base = input;
-  let toneNum = '';
-  for(const k in toneMap){
-    if(base.includes(k)){
-      const mapped = toneMap[k]; // e.g., a1
-      const letter = mapped[0];
-      toneNum = mapped.slice(1);
-      base = base.replace(k, letter);
-    }
-  }
-  if(toneNum) return base + toneNum;
-  return base; // 如果无法识别，原样返回
-}
-
-function setPracticeTarget(s){
-  practiceTarget.textContent = s.display;
-  practiceTarget.dataset.pinyin = s.pinyin;
-  answerInput.value = '';
-  feedback.textContent = '';
-}
-
-let currentPractice = pickRandom();
-setPracticeTarget(currentPractice);
-
-checkBtn.addEventListener('click', () => {
-  const user = normalizePinyinInput(answerInput.value);
-  const target = currentPractice.pinyin;
-  if(!user){
-    feedback.textContent = '请输入你的答案';
-    feedback.style.color = 'var(--muted)';
-    return;
-  }
-  if(user === target){
-    feedback.textContent = '✔ 正确';
-    feedback.style.color = 'var(--success)';
-  } else {
-    feedback.textContent = `✖ 错误，正确答案：${target}`;
-    feedback.style.color = 'var(--danger)';
-  }
-});
-
-nextBtn.addEventListener('click', () => {
-  currentPractice = pickRandom();
-  setPracticeTarget(currentPractice);
-});
-
-// Quiz
-startQuizBtn.addEventListener('click', startQuiz);
-
-function startQuiz(){
-  const total = 5;
-  const pool = shuffle([...SYLLABLES]);
-  let index = 0, score = 0;
-  quizQuestion.classList.remove('hidden');
-  startQuizBtn.disabled = true;
-  quizStatus.textContent = `题目 1/${total}`;
-  renderQuiz();
-
-  function renderQuiz(){
-    const q = pool[index];
-    quizPrompt.textContent = `请从选项中选择与拼音 ${q.display} （${q.pinyin}） 对应的项：`;
-    const options = makeOptions(q, pool);
-    quizOptions.innerHTML = '';
-    options.forEach(opt => {
-      const btn = document.createElement('div');
-      btn.className = 'option';
-      btn.textContent = opt.label;
-      btn.addEventListener('click', () => {
-        // 判分并高亮
-        if(opt.pinyin === q.pinyin){
-          btn.classList.add('correct');
-          score++;
-        } else {
-          btn.classList.add('wrong');
-          // 标出正确答案
-          Array.from(quizOptions.children).forEach(c => {
-            if(c.textContent === getLabelByPinyin(q.pinyin)) c.classList.add('correct');
-          });
-        }
-        // 下一题
-        Array.from(quizOptions.children).forEach(c => c.style.pointerEvents = 'none');
-        setTimeout(() => {
-          index++;
-          if(index >= total){
-            finish();
-          } else {
-            quizStatus.textContent = `题目 ${index+1}/${total}`;
-            renderQuiz();
-          }
-        }, 800);
-      });
-      quizOptions.appendChild(btn);
+// 渲染声母按钮
+function renderInitials(){
+  INITIALS.forEach(i => {
+    const el = document.createElement('div');
+    el.className = 'chip';
+    el.textContent = i === '' ? '（空）' : i;
+    el.title = i === '' ? '无声母（以韵母发音）' : i;
+    el.addEventListener('click', () => {
+      // 播放一个常见示例：声母 + 'a'，并用第一声演示
+      const base = (i === '' ? 'a' : i + 'a');
+      playPinyin(base, 1);
     });
-  }
+    initialsEl.appendChild(el);
 
-  function finish(){
-    quizPrompt.textContent = `测验结束！得分 ${score}/${total}`;
-    quizOptions.innerHTML = '';
-    quizStatus.textContent = '';
-    startQuizBtn.disabled = false;
-    quizQuestion.classList.add('hidden');
-  }
+    // populate selector
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i === '' ? '(空)' : i;
+    selInitial.appendChild(opt);
+  });
 }
 
-function makeOptions(correct, pool){
-  const opts = [correct];
-  // 随机挑选错误项
-  const others = pool.filter(p => p.pinyin !== correct.pinyin);
-  shuffle(others);
-  while(opts.length < 4 && others.length) opts.push(others.shift());
-  return shuffle(opts).map(o => ({label: o.examples && o.examples[0] ? o.examples[0].split('—')[0].trim() : o.display, pinyin: o.pinyin}));
+// 渲染韵母按钮
+function renderFinals(){
+  FINALS.forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'chip';
+    el.textContent = f;
+    el.title = f;
+    el.addEventListener('click', () => {
+      // 播放韵母本身（加上常用声母空或 y/w），用第一声演示
+      // 若韵母以 i/u/ü 开头，常与 y/w 结合来发音（教学上常用）
+      const prefix = /^[iuü]/.test(f) ? '' : ''; // 这里只直接播放韵母
+      playPinyin(f, 1);
+    });
+    finalsEl.appendChild(el);
+
+    // populate selector
+    const opt = document.createElement('option');
+    opt.value = f;
+    opt.textContent = f;
+    selFinal.appendChild(opt);
+  });
 }
 
-function getLabelByPinyin(p){
-  const item = SYLLABLES.find(s => s.pinyin === p);
-  return item ? (item.examples && item.examples[0] ? item.examples[0].split('—')[0].trim() : item.display) : p;
+// 预设常用音节快速试听
+function renderPresets(){
+  PRESETS.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'chip';
+    el.textContent = p;
+    el.addEventListener('click', () => {
+      // 拆分数字声调尾部
+      const m = p.match(/^([a-zü]+)([1-5])?$/i);
+      const base = m ? m[1] : p;
+      const tone = m && m[2] ? Number(m[2]) : 1;
+      playPinyin(base, tone === 5 ? 0 : tone);
+    });
+    presetsEl.appendChild(el);
+  });
 }
 
-// Utilities
-function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-  return arr;
-}
+// 组合器按钮事件
+genPlayBtn.addEventListener('click', () => {
+  const ini = selInitial.value; // 可能为空字符串
+  const fin = selFinal.value;
+  let base = (ini || '') + (fin || '');
+  // 处理拼写习惯：当初学者把 "ü" 写成 "v"，但下拉里已经是 "ü"
+  base = base.replace(/v/g, 'ü');
+  const tone = Number(selTone.value);
+  playPinyin(base, tone);
+});
+
+// 初始化
+renderInitials();
+renderFinals();
+renderPresets();
+
+// 默认选择
+selInitial.value = "";
+selFinal.value = "a";
+selTone.value = "1";
+resultEl.textContent = applyToneMark("a",1);
+  </script>
+</body>
+</html>
