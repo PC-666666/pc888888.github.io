@@ -1,15 +1,413 @@
-<!DOCTYPE html>
-<html lang="zh-hans">
+<!doctype html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>拼音教学站 — Pinyin Tutor</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <h1>欢迎来到我的网页！</h1>
-    
-    <a href=" " target="_blank">
-        <button>点击这里跳转到百度官网</button>
-    </a >
+  <header>
+    <h1>拼音教学站 <small>（Pinyin Tutor）</small></h1>
+    <p class="subtitle">学习拼音、练习声调、听力与拼写</p>
+  </header>
+
+  <main>
+    <section id="learning" class="card">
+      <h2>学习拼音</h2>
+      <div id="lesson-controls">
+        <label>筛选：
+          <select id="filter-select">
+            <option value="all">全部</option>
+            <option value="initials">声母 (initials)</option>
+            <option value="finals">韵母 (finals)</option>
+            <option value="special">整体认读</option>
+          </select>
+        </label>
+        <input id="search" placeholder="搜索拼音或示例词 (如：ma)" />
+      </div>
+
+      <div id="syllable-list" class="grid"></div>
+
+      <div id="detail" class="detail">
+        <h3 id="detail-syllable">选择一个拼音</h3>
+        <div class="controls">
+          <button id="play-btn">🔊 播放发音</button>
+          <button id="show-examples-btn">示例词</button>
+        </div>
+        <p id="detail-description"></p>
+        <ul id="examples"></ul>
+      </div>
+    </section>
+
+    <section id="practice" class="card">
+      <h2>即时练习</h2>
+      <div id="practice-area">
+        <div id="practice-target" class="big-text"></div>
+        <div class="row">
+          <input id="answer" placeholder="输入拼音并标声调，例如：mā / ma1" />
+          <button id="check-btn">检查</button>
+          <button id="next-btn">下一个</button>
+        </div>
+        <p id="feedback" class="feedback"></p>
+      </div>
+    </section>
+
+    <section id="quiz" class="card">
+      <h2>小测验（随机）</h2>
+      <div id="quiz-area">
+        <button id="start-quiz">开始测验（5题）</button>
+        <div id="quiz-question" class="hidden">
+          <p id="quiz-prompt"></p>
+          <div id="quiz-options" class="grid options"></div>
+          <p id="quiz-status"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>示例项目 · 可定制 · 如果你需要后端或更复杂功能，请告诉我</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
+:root{
+  --bg:#f7f9fc;
+  --card:#ffffff;
+  --accent:#2b7de9;
+  --muted:#6b7280;
+  --success:#16a34a;
+  --danger:#dc2626;
+  font-family: Inter, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:#0f172a;
+  line-height:1.4;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  padding:20px;
+}
+
+header{margin-bottom:18px}
+header h1{margin:0;font-size:1.6rem}
+.subtitle{margin:4px 0 0;color:var(--muted)}
+
+main{
+  display:grid;
+  grid-template-columns: 1fr 360px;
+  gap:18px;
+  align-items:start;
+  flex:1;
+}
+
+.card{
+  background:var(--card);
+  border-radius:10px;
+  padding:16px;
+  box-shadow:0 6px 18px rgba(15,23,42,0.06);
+}
+
+#learning{grid-column:1}
+#practice,#quiz{grid-column:2}
+
+#lesson-controls{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+#lesson-controls input, #lesson-controls select{padding:6px 8px;border-radius:6px;border:1px solid #e6eef8}
+
+.grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill,minmax(120px,1fr));
+  gap:10px;
+}
+
+.syllable{
+  padding:10px;
+  border-radius:8px;
+  background:linear-gradient(180deg,#ffffff,#f3f9ff);
+  text-align:center;
+  cursor:pointer;
+  border:1px solid rgba(43,125,233,0.08);
+}
+
+.syllable .pinyin{font-weight:700;font-size:1.1rem}
+.syllable .tone{color:var(--muted);font-size:0.85rem}
+
+.detail{margin-top:14px;padding:12px;background:#fbfdff;border-radius:8px;border:1px solid #eef6ff}
+.controls{display:flex;gap:8px;margin:8px 0}
+.controls button{padding:6px 10px;border-radius:6px;border:1px solid #dbeafe;background:#ffffff;cursor:pointer}
+
+.big-text{font-size:2rem;font-weight:700;text-align:center;padding:10px}
+.row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.row input{flex:1;padding:8px;border-radius:8px;border:1px solid #e6eef8}
+
+.feedback{min-height:1.2rem;margin-top:8px}
+
+.hidden{display:none}
+
+footer{text-align:center;margin-top:18px;color:var(--muted);font-size:0.9rem}
+
+/* Quiz options */
+.options{grid-template-columns:repeat(2,1fr)}
+.option{
+  padding:10px;border-radius:8px;border:1px solid #e6eef8;background:#fff;cursor:pointer;text-align:center;
+}
+.option.correct{background:linear-gradient(90deg,#ecfdf5,#bbf7d0);border-color:var(--success)}
+.option.wrong{background:linear-gradient(90deg,#fff1f2,#fecaca);border-color:var(--danger)}
+// 简易拼音教学数据（演示用，可扩展）
+const SYLLABLES = [
+  {pinyin: "ma1", display: "mā", type: "initials", desc: "常见音节：妈（mother）", examples: ["妈 mā — 妈妈", "骂 mà — 责备"]},
+  {pinyin: "ma2", display: "má", type: "initials", desc: "上升调", examples: ["麻 má — 大麻"]},
+  {pinyin: "ma3", display: "mǎ", type: "initials", desc: "上降上调", examples: ["马 mǎ — 动物"]},
+  {pinyin: "ma4", display: "mà", type: "initials", desc: "第四声（去声）", examples: ["骂 mà — 斥责"]},
+  {pinyin: "ba1", display: "bā", type: "initials", desc: "声母 b", examples: ["八 bā — 数字"]},
+  {pinyin: "bo1", display: "bō", type: "initials", desc: "整体认读与韵母示例", examples: ["波 bō — 波浪"]},
+  {pinyin: "ai1", display: "āi", type: "finals", desc: "韵母 ai 的第一声", examples: ["爱 ài — 爱情"]},
+  // 可在此处继续添加完整拼音表
+];
+
+// DOM
+const syllableList = document.getElementById('syllable-list');
+const detailSyllable = document.getElementById('detail-syllable');
+const detailDescription = document.getElementById('detail-description');
+const examplesEl = document.getElementById('examples');
+const playBtn = document.getElementById('play-btn');
+const showExamplesBtn = document.getElementById('show-examples-btn');
+const filterSelect = document.getElementById('filter-select');
+const searchInput = document.getElementById('search');
+
+const practiceTarget = document.getElementById('practice-target');
+const answerInput = document.getElementById('answer');
+const checkBtn = document.getElementById('check-btn');
+const nextBtn = document.getElementById('next-btn');
+const feedback = document.getElementById('feedback');
+
+const startQuizBtn = document.getElementById('start-quiz');
+const quizQuestion = document.getElementById('quiz-question');
+const quizPrompt = document.getElementById('quiz-prompt');
+const quizOptions = document.getElementById('quiz-options');
+const quizStatus = document.getElementById('quiz-status');
+
+let current = null;
+let practicePool = [...SYLLABLES];
+
+// Helpers
+function renderList(list){
+  syllableList.innerHTML = '';
+  list.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'syllable';
+    el.dataset.pinyin = s.pinyin;
+    el.innerHTML = `<div class="pinyin">${s.display}</div><div class="tone">${s.pinyin}</div>`;
+    el.addEventListener('click', () => showDetail(s));
+    syllableList.appendChild(el);
+  });
+}
+
+function showDetail(s){
+  current = s;
+  detailSyllable.textContent = `${s.display}  —  ${s.pinyin}`;
+  detailDescription.textContent = s.desc || '';
+  examplesEl.innerHTML = '';
+  (s.examples || []).forEach(it => {
+    const li = document.createElement('li');
+    li.textContent = it;
+    examplesEl.appendChild(li);
+  });
+}
+
+function speak(text){
+  if(!window.speechSynthesis) return alert('当前浏览器不支持 SpeechSynthesis');
+  const utter = new SpeechSynthesisUtterance(text);
+  // 尽量使用中文发音（设备支持情况下）
+  utter.lang = 'zh-CN';
+  // 直接朗读汉字或拼音（效果因浏览器而异）
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
+}
+
+// 初始渲染
+renderList(SYLLABLES);
+showDetail(SYLLABLES[0]);
+
+// 过滤与搜索
+filterSelect.addEventListener('change', () => applyFilter());
+searchInput.addEventListener('input', () => applyFilter());
+
+function applyFilter(){
+  const f = filterSelect.value;
+  const q = searchInput.value.trim().toLowerCase();
+  const filtered = SYLLABLES.filter(s => {
+    if(f !== 'all' && s.type !== f) return false;
+    if(!q) return true;
+    return s.pinyin.includes(q) || s.display.includes(q) || (s.examples||[]).some(e => e.toLowerCase().includes(q));
+  });
+  renderList(filtered);
+}
+
+// 播放与示例
+playBtn.addEventListener('click', () => {
+  if(!current) return;
+  // 优先朗读汉字示例中的汉字（更自然）；如无则读拼音
+  const text = (current.examples && current.examples[0]) || current.pinyin;
+  speak(text);
+});
+
+showExamplesBtn.addEventListener('click', () => {
+  if(!current) return;
+  alert((current.examples || []).join('\n') || '无示例');
+});
+
+// Practice
+function pickRandom(){
+  return practicePool[Math.floor(Math.random()*practicePool.length)];
+}
+
+function normalizePinyinInput(input){
+  // 简单规范化：把带声调或数字转为标准 pinyin 数字形式，如：mā -> ma1, ma1 -> ma1
+  input = input.trim().toLowerCase();
+  // 处理以数字标调的情况
+  const numMatch = input.match(/([a-z]+)([1-5])$/);
+  if(numMatch) return `${numMatch[1]}${numMatch[2]}`;
+  // 简单处理带音调字符（只支持常见五个调），映射回数字（示范）
+  const toneMap = {
+    'ā':'a1','á':'a2','ǎ':'a3','à':'a4',
+    'ó':'o2','ō':'o1','ǒ':'o3','ò':'o4',
+    'ē':'e1','é':'e2','ě':'e3','è':'e4',
+    'í':'i2','ī':'i1','ǐ':'i3','ì':'i4',
+    'ú':'u2','ū':'u1','ǔ':'u3','ù':'u4',
+    'ǘ':'ü2','ǚ':'ü3','ǜ':'ü4','ǖ':'ü1'
+  };
+  // 替换带调字符
+  let base = input;
+  let toneNum = '';
+  for(const k in toneMap){
+    if(base.includes(k)){
+      const mapped = toneMap[k]; // e.g., a1
+      const letter = mapped[0];
+      toneNum = mapped.slice(1);
+      base = base.replace(k, letter);
+    }
+  }
+  if(toneNum) return base + toneNum;
+  return base; // 如果无法识别，原样返回
+}
+
+function setPracticeTarget(s){
+  practiceTarget.textContent = s.display;
+  practiceTarget.dataset.pinyin = s.pinyin;
+  answerInput.value = '';
+  feedback.textContent = '';
+}
+
+let currentPractice = pickRandom();
+setPracticeTarget(currentPractice);
+
+checkBtn.addEventListener('click', () => {
+  const user = normalizePinyinInput(answerInput.value);
+  const target = currentPractice.pinyin;
+  if(!user){
+    feedback.textContent = '请输入你的答案';
+    feedback.style.color = 'var(--muted)';
+    return;
+  }
+  if(user === target){
+    feedback.textContent = '✔ 正确';
+    feedback.style.color = 'var(--success)';
+  } else {
+    feedback.textContent = `✖ 错误，正确答案：${target}`;
+    feedback.style.color = 'var(--danger)';
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  currentPractice = pickRandom();
+  setPracticeTarget(currentPractice);
+});
+
+// Quiz
+startQuizBtn.addEventListener('click', startQuiz);
+
+function startQuiz(){
+  const total = 5;
+  const pool = shuffle([...SYLLABLES]);
+  let index = 0, score = 0;
+  quizQuestion.classList.remove('hidden');
+  startQuizBtn.disabled = true;
+  quizStatus.textContent = `题目 1/${total}`;
+  renderQuiz();
+
+  function renderQuiz(){
+    const q = pool[index];
+    quizPrompt.textContent = `请从选项中选择与拼音 ${q.display} （${q.pinyin}） 对应的项：`;
+    const options = makeOptions(q, pool);
+    quizOptions.innerHTML = '';
+    options.forEach(opt => {
+      const btn = document.createElement('div');
+      btn.className = 'option';
+      btn.textContent = opt.label;
+      btn.addEventListener('click', () => {
+        // 判分并高亮
+        if(opt.pinyin === q.pinyin){
+          btn.classList.add('correct');
+          score++;
+        } else {
+          btn.classList.add('wrong');
+          // 标出正确答案
+          Array.from(quizOptions.children).forEach(c => {
+            if(c.textContent === getLabelByPinyin(q.pinyin)) c.classList.add('correct');
+          });
+        }
+        // 下一题
+        Array.from(quizOptions.children).forEach(c => c.style.pointerEvents = 'none');
+        setTimeout(() => {
+          index++;
+          if(index >= total){
+            finish();
+          } else {
+            quizStatus.textContent = `题目 ${index+1}/${total}`;
+            renderQuiz();
+          }
+        }, 800);
+      });
+      quizOptions.appendChild(btn);
+    });
+  }
+
+  function finish(){
+    quizPrompt.textContent = `测验结束！得分 ${score}/${total}`;
+    quizOptions.innerHTML = '';
+    quizStatus.textContent = '';
+    startQuizBtn.disabled = false;
+    quizQuestion.classList.add('hidden');
+  }
+}
+
+function makeOptions(correct, pool){
+  const opts = [correct];
+  // 随机挑选错误项
+  const others = pool.filter(p => p.pinyin !== correct.pinyin);
+  shuffle(others);
+  while(opts.length < 4 && others.length) opts.push(others.shift());
+  return shuffle(opts).map(o => ({label: o.examples && o.examples[0] ? o.examples[0].split('—')[0].trim() : o.display, pinyin: o.pinyin}));
+}
+
+function getLabelByPinyin(p){
+  const item = SYLLABLES.find(s => s.pinyin === p);
+  return item ? (item.examples && item.examples[0] ? item.examples[0].split('—')[0].trim() : item.display) : p;
+}
+
+// Utilities
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
